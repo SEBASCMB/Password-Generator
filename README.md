@@ -35,5 +35,3 @@
 > --------------
 >
 > Si desea contribuir a este proyecto, puede enviar una solicitud de pull o informar sobre cualquier error o problema encontrado.
-
-TEST
