@@ -1,91 +1,100 @@
-const lengthSlider = document.querySelector(".pass-length input"),
-  options = document.querySelectorAll(".option input"),
-  copyIcon = document.querySelector(".input-box span"),
-  passwordInput = document.querySelector(".input-box input"),
-  passIndicator = document.querySelector(".pass-indicator"),
-  generateBtn = document.querySelector(".generate-btn");
+// Elementos del DOM
+const elements = {
+  lengthSlider: document.querySelector(".pass-length input"),
+  options: document.querySelectorAll(".option input"),
+  copyIcon: document.querySelector(".input-box span"),
+  passwordInput: document.querySelector(".input-box input"),
+  passIndicator: document.querySelector(".pass-indicator"),
+  generateBtn: document.querySelector(".generate-btn"),
+};
 
+// Caracteres disponibles para construir contraseñas
 const characters = {
-  // object of letters, numbers & symbols
   lowercase: "abcdefghijklmnopqrstuvwxyz",
   uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
   numbers: "0123456789",
   symbols: "^!$%&|[](){}:;.,*+-#@<>~",
 };
 
-const generatePassword = () => {
-  let staticPassword = "",
-    randomPassword = "",
-    excludeDuplicate = false,
-    passLength = lengthSlider.value;
+// Configuración de constantes
+const MIN_PASSWORD_LENGTH = 8;
+const MEDIUM_PASSWORD_LENGTH = 16;
+const COPY_ICON_TIMEOUT = 1500;
 
-  options.forEach((option) => {
-    // looping through each option's checkbox
+// Configuración de opciones
+const config = {
+  excludeDuplicate: false,
+};
+
+// Función para generar una contraseña aleatoria
+function generatePassword() {
+  let staticPassword = "";
+  let randomPassword = "";
+  const passLength = elements.lengthSlider.value;
+
+  elements.options.forEach((option) => {
     if (option.checked) {
-      // if checkbox is checked
-      // if checkbox id isn't exc-duplicate && spaces
       if (option.id !== "exc-duplicate" && option.id !== "spaces") {
-        // adding particular key value from character object to staticPassword
         staticPassword += characters[option.id];
       } else if (option.id === "spaces") {
-        // if checkbox id is spaces
-        staticPassword += `  ${staticPassword}  `; // adding space at the beginning & end of staticPassword
+        staticPassword += `  ${staticPassword}  `;
       } else {
-        // else pass true value to excludeDuplicate
-        excludeDuplicate = true;
+        config.excludeDuplicate = true;
       }
     }
   });
 
   for (let i = 0; i < passLength; i++) {
-    // getting random character from the static password
-    let randomChar =
+    const randomChar =
       staticPassword[Math.floor(Math.random() * staticPassword.length)];
-    if (excludeDuplicate) {
-      // if excludeDuplicate is true
-      // if randomPassword doesn't contains the current random character or randomChar is equal
-      // to space " " then add random character to randomPassword else decrement i by -1
-      !randomPassword.includes(randomChar) || randomChar == " "
-        ? (randomPassword += randomChar)
-        : i--;
+    if (config.excludeDuplicate) {
+      if (!randomPassword.includes(randomChar) || randomChar === " ") {
+        randomPassword += randomChar;
+      } else {
+        i--;
+      }
     } else {
-      // else add random character to randomPassword
       randomPassword += randomChar;
     }
   }
-  passwordInput.value = randomPassword; // passing randomPassword to passwordInput value
-};
 
-const updatePassIndicator = () => {
-  // if lengthSlider value is less than 8 then pass "weak" as passIndicator id else if lengthSlider
-  // value is less than 16 then pass "medium" as id else pass "strong" as id
-  passIndicator.id =
-    lengthSlider.value <= 8
+  elements.passwordInput.value = randomPassword;
+  updatePassIndicator();
+}
+
+// Función para actualizar el indicador de la fortaleza de la contraseña
+function updatePassIndicator() {
+  const sliderValue = elements.lengthSlider.value;
+  elements.passIndicator.id =
+    sliderValue <= MIN_PASSWORD_LENGTH
       ? "weak"
-      : lengthSlider.value <= 16
+      : sliderValue <= MEDIUM_PASSWORD_LENGTH
       ? "medium"
       : "strong";
-};
+}
 
-const updateSlider = () => {
-  // passing slider value as counter text
-  document.querySelector(".pass-length span").innerText = lengthSlider.value;
+// Función para actualizar el valor del slider y generar una nueva contraseña
+function updateSlider() {
+  const sliderValue = elements.lengthSlider.value;
+  document.querySelector(".pass-length span").innerText = sliderValue;
   generatePassword();
-  updatePassIndicator();
-};
-updateSlider();
+}
 
-const copyPassword = () => {
-  navigator.clipboard.writeText(passwordInput.value); // copying random password
-  copyIcon.innerText = "check"; // changing copy icon to tick
-  copyIcon.style.color = "#4285F4";
+// Función para copiar la contraseña al portapapeles
+function copyPassword() {
+  navigator.clipboard.writeText(elements.passwordInput.value);
+  elements.copyIcon.innerText = "check";
+  elements.copyIcon.style.color = "#4285F4";
   setTimeout(() => {
-    // after 1500 ms, changing tick icon back to copy
-    copyIcon.innerText = "copy_all";
-    copyIcon.style.color = "#707070";
-  }, 1500);
-};
+    elements.copyIcon.innerText = "copy_all";
+    elements.copyIcon.style.color = "#707070";
+  }, COPY_ICON_TIMEOUT);
+}
 
-copyIcon.addEventListener("click", copyPassword);
-lengthSlider.addEventListener("input", updateSlider);
-generateBtn.addEventListener("click", generatePassword);
+// Agregar event listeners
+elements.generateBtn.addEventListener("click", generatePassword);
+elements.lengthSlider.addEventListener("input", updateSlider);
+elements.copyIcon.addEventListener("click", copyPassword);
+
+// Inicializar la página
+updateSlider();
